@@ -14,10 +14,78 @@ using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Threading;
 
-#nullable disable
+// #nullable disable
 
 namespace MbnDiagnostics
 {
+    // Converters for UI enhancements
+    public class BooleanToVisibilityConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is bool b && b)
+            {
+                return Visibility.Visible;
+            }
+            return Visibility.Collapsed;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            return DependencyProperty.UnsetValue;
+        }
+    }
+
+    public class SignalQualityToColorConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is string quality)
+            {
+                return quality switch
+                {
+                    "Excellent" => new SolidColorBrush(Color.FromRgb(34, 197, 94)), // Green
+                    "Good" => new SolidColorBrush(Color.FromRgb(52, 152, 219)), // Blue
+                    "Fair" => new SolidColorBrush(Color.FromRgb(243, 156, 18)), // Orange
+                    _ => new SolidColorBrush(Color.FromRgb(231, 76, 60)), // Red for Poor/Unknown
+                };
+            }
+            return new SolidColorBrush(Colors.Red);
+        }
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class EnumToBrushConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is string status)
+            {
+                if (status.Equals("Connected", StringComparison.OrdinalIgnoreCase) || status.Contains("Ready", StringComparison.OrdinalIgnoreCase))
+                {
+                    return new SolidColorBrush(Color.FromRgb(34, 197, 94)); // Green
+                }
+                else if (status.Equals("Connecting", StringComparison.OrdinalIgnoreCase))
+                {
+                    return new SolidColorBrush(Color.FromRgb(52, 152, 219)); // Blue
+                }
+                else if (status.Equals("Disconnected", StringComparison.OrdinalIgnoreCase) || status.Equals("Not Initialized", StringComparison.OrdinalIgnoreCase))
+                {
+                    return new SolidColorBrush(Color.FromRgb(231, 76, 60)); // Red
+                }
+            }
+            return new SolidColorBrush(Colors.White); // Default
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
     // Data Models
     public class MbnInterface : INotifyPropertyChanged
     {
@@ -591,6 +659,8 @@ namespace MbnDiagnostics
                 OnPropertyChanged();
                 if (RefreshButton != null)
                     RefreshButton.IsEnabled = !value;
+                if (TcpIpButton != null)
+                    TcpIpButton.IsEnabled = !value;
             }
         }
 
@@ -673,6 +743,23 @@ namespace MbnDiagnostics
         private async void RefreshButton_Click(object sender, RoutedEventArgs e)
         {
             await RefreshDataAsync();
+        }
+
+        private void TcpIpButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var tcpIpWindow = new TcpIpWindow
+                {
+                    Owner = this
+                };
+                tcpIpWindow.Show();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error opening TCP/IP window: {ex.Message}", "Error",
+                              MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

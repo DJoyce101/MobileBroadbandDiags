@@ -1,40 +1,104 @@
 ﻿<Window x:Class="MbnDiagnostics.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:MbnDiagnostics"
         Title="Mobile Broadband Diagnostics - Complete System Information" Height="800" Width="1200"
-        Background="#F5F5F5" WindowStartupLocation="CenterScreen">
+        Background="#1E1E1E" WindowStartupLocation="CenterScreen">
 
     <Window.Resources>
-        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <local:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <local:SignalQualityToColorConverter x:Key="SignalQualityToColorConverter"/>
+        <local:EnumToBrushConverter x:Key="EnumToBrushConverter"/>
 
         <Style x:Key="CardStyle" TargetType="Border">
-            <Setter Property="Background" Value="White"/>
-            <Setter Property="CornerRadius" Value="8"/>
-            <Setter Property="BorderBrush" Value="#E0E0E0"/>
+            <Setter Property="Background" Value="#252526"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="BorderBrush" Value="#333333"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Margin" Value="10"/>
-            <Setter Property="Padding" Value="15"/>
+            <Setter Property="Margin" Value="15"/>
+            <Setter Property="Padding" Value="20"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect Color="#000000" Opacity="0.3" ShadowDepth="3" BlurRadius="5"/>
+                </Setter.Value>
+            </Setter>
         </Style>
 
         <Style x:Key="HeaderStyle" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontSize" Value="18"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Foreground" Value="#333"/>
-            <Setter Property="Margin" Value="0,0,0,10"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Margin" Value="0,0,0,15"/>
         </Style>
 
         <Style x:Key="SubHeaderStyle" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontSize" Value="13"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Foreground" Value="#666"/>
-            <Setter Property="Margin" Value="0,0,0,3"/>
+            <Setter Property="Foreground" Value="#CCCCCC"/>
+            <Setter Property="Margin" Value="0,0,0,5"/>
         </Style>
 
         <Style x:Key="ValueStyle" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="12"/>
-            <Setter Property="Foreground" Value="#333"/>
-            <Setter Property="Margin" Value="0,0,0,8"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
             <Setter Property="TextWrapping" Value="Wrap"/>
+        </Style>
+
+        <Style x:Key="DataGridHeaderStyle" TargetType="DataGridColumnHeader">
+            <Setter Property="Background" Value="#252526"/>
+            <Setter Property="Foreground" Value="#007ACC"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="BorderThickness" Value="0,0,0,2"/>
+            <Setter Property="BorderBrush" Value="#007ACC"/>
+        </Style>
+
+        <Style x:Key="DataGridCellStyle" TargetType="DataGridCell">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Padding" Value="5"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+
+        <Style TargetType="{x:Type TabControl}">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="#333333"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+
+        <Style TargetType="{x:Type TabItem}">
+            <Setter Property="Background" Value="#2C3E50"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="10,5"/>
+            <Setter Property="Margin" Value="0,0,5,0"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type TabItem}">
+                        <Border Name="Border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="1,1,1,0"
+                                CornerRadius="5,5,0,0">
+                            <ContentPresenter x:Name="ContentSite"
+                                        VerticalAlignment="Center"
+                                        HorizontalAlignment="Center"
+                                        ContentSource="Header"
+                                        Margin="12,2,12,2"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="Foreground" Value="Black"/>
+                                <Setter Property="Background" Value="#007ACC"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#005C99"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
     </Window.Resources>
 
@@ -44,33 +108,35 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Header -->
         <Border Grid.Row="0" Background="#2C3E50" Padding="20,15">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <StackPanel Grid.Column="0" Orientation="Horizontal">
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                     <TextBlock Text="Mobile Broadband Diagnostics" 
-                              FontSize="20" FontWeight="Bold" Foreground="White"/>
-                    <ProgressBar Width="100" Height="4" Margin="20,8,0,0" 
-                                IsIndeterminate="{Binding IsLoading}" 
+                               FontSize="20" FontWeight="Bold" Foreground="White"/>
+                    <ProgressBar Width="100" Height="4" Margin="20,8,0,0"
+                                IsIndeterminate="{Binding IsLoading}"
                                 Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                 </StackPanel>
 
-                <Button x:Name="RefreshButton" Grid.Column="1" Content="Refresh All Data" Padding="15,5" 
+                <Button x:Name="TcpIpButton" Grid.Column="1" Content="TCP/IP" Padding="15,5" Margin="0,0,10,0"
+                       Background="#9B59B6" Foreground="White" BorderThickness="0"
+                       Click="TcpIpButton_Click"/>
+
+                <Button x:Name="RefreshButton" Grid.Column="2" Content="Refresh All Data" Padding="15,5" 
                        Background="#3498DB" Foreground="White" BorderThickness="0"
                        Click="RefreshButton_Click"/>
             </Grid>
         </Border>
 
-        <!-- Main Content -->
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <StackPanel Margin="10">
 
-                <!-- Device Identification Card -->
                 <Border Style="{StaticResource CardStyle}">
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -111,7 +177,6 @@
                     </Grid>
                 </Border>
 
-                <!-- Connection Status Card -->
                 <Border Style="{StaticResource CardStyle}">
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -123,7 +188,8 @@
                         <StackPanel Grid.Column="0">
                             <TextBlock Text="Connection Status" Style="{StaticResource HeaderStyle}"/>
                             <TextBlock Text="Interface State:" Style="{StaticResource SubHeaderStyle}"/>
-                            <TextBlock Text="{Binding CurrentInterface.State}" Style="{StaticResource ValueStyle}" FontWeight="Bold"/>
+                            <TextBlock Text="{Binding CurrentInterface.State}" Style="{StaticResource ValueStyle}" FontWeight="Bold"
+                                       Foreground="{Binding CurrentInterface.State, Converter={StaticResource EnumToBrushConverter}}"/>
                             <TextBlock Text="Register State:" Style="{StaticResource SubHeaderStyle}"/>
                             <TextBlock Text="{Binding CurrentInterface.RegisterState}" Style="{StaticResource ValueStyle}"/>
                             <TextBlock Text="Register Mode:" Style="{StaticResource SubHeaderStyle}"/>
@@ -158,7 +224,6 @@
                     </Grid>
                 </Border>
 
-                <!-- Signal Information Card -->
                 <Border Style="{StaticResource CardStyle}">
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -170,7 +235,9 @@
                         <StackPanel Grid.Column="0">
                             <TextBlock Text="Signal Quality" Style="{StaticResource HeaderStyle}"/>
                             <TextBlock Text="Signal Strength:" Style="{StaticResource SubHeaderStyle}"/>
-                            <TextBlock Text="{Binding CurrentInterface.SignalDisplay}" Style="{StaticResource ValueStyle}" FontWeight="Bold"/>
+                            <TextBlock Text="{Binding CurrentInterface.SignalDisplay}" 
+                                       Style="{StaticResource ValueStyle}" FontWeight="Bold"
+                                       Foreground="{Binding CurrentInterface.SignalQuality, Converter={StaticResource SignalQualityToColorConverter}}"/>
                             <TextBlock Text="RSSI Level:" Style="{StaticResource SubHeaderStyle}"/>
                             <TextBlock Text="{Binding CurrentInterface.RssiLevel}" Style="{StaticResource ValueStyle}"/>
                             <TextBlock Text="RSSI (dBm):" Style="{StaticResource SubHeaderStyle}"/>
@@ -199,13 +266,14 @@
                     </Grid>
                 </Border>
 
-                <!-- Detailed Information Tabs -->
                 <Border Style="{StaticResource CardStyle}">
                     <TabControl>
-                        <!-- Network Contexts Tab -->
                         <TabItem Header="Provisioned Contexts (APNs)">
                             <DataGrid ItemsSource="{Binding Contexts}" AutoGenerateColumns="False" 
-                                     IsReadOnly="True" Margin="10" HeadersVisibility="Column">
+                                     IsReadOnly="True" Margin="10" HeadersVisibility="Column"
+                                     AlternatingRowBackground="#252526" Background="#1E1E1E" RowBackground="#1E1E1E"
+                                     ColumnHeaderStyle="{StaticResource DataGridHeaderStyle}"
+                                     CellStyle="{StaticResource DataGridCellStyle}">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
                                     <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="100"/>
@@ -217,10 +285,12 @@
                             </DataGrid>
                         </TabItem>
 
-                        <!-- Available Networks Tab -->
                         <TabItem Header="Available Networks">
                             <DataGrid ItemsSource="{Binding Providers}" AutoGenerateColumns="False" 
-                                     IsReadOnly="True" Margin="10" HeadersVisibility="Column">
+                                     IsReadOnly="True" Margin="10" HeadersVisibility="Column"
+                                     AlternatingRowBackground="#252526" Background="#1E1E1E" RowBackground="#1E1E1E"
+                                     ColumnHeaderStyle="{StaticResource DataGridHeaderStyle}"
+                                     CellStyle="{StaticResource DataGridCellStyle}">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="Provider Name" Binding="{Binding Name}" Width="150"/>
                                     <DataGridTextColumn Header="Provider ID" Binding="{Binding Id}" Width="100"/>
@@ -230,12 +300,14 @@
                             </DataGrid>
                         </TabItem>
 
-                        <!-- PIN Information Tab -->
                         <TabItem Header="PIN Information">
                             <StackPanel Margin="10">
                                 <TextBlock Text="PIN Configuration Details" Style="{StaticResource HeaderStyle}"/>
                                 <DataGrid ItemsSource="{Binding PinInfo}" AutoGenerateColumns="False" 
-                                         IsReadOnly="True" HeadersVisibility="Column">
+                                          IsReadOnly="True" HeadersVisibility="Column"
+                                          AlternatingRowBackground="#252526" Background="#1E1E1E" RowBackground="#1E1E1E"
+                                          ColumnHeaderStyle="{StaticResource DataGridHeaderStyle}"
+                                          CellStyle="{StaticResource DataGridCellStyle}">
                                     <DataGrid.Columns>
                                         <DataGridTextColumn Header="PIN Type" Binding="{Binding PinType}" Width="120"/>
                                         <DataGridTextColumn Header="Mode" Binding="{Binding PinMode}" Width="100"/>
@@ -249,7 +321,6 @@
                             </StackPanel>
                         </TabItem>
 
-                        <!-- SMS Information Tab -->
                         <TabItem Header="SMS Information">
                             <StackPanel Margin="10">
                                 <TextBlock Text="SMS Configuration" Style="{StaticResource HeaderStyle}"/>
@@ -280,7 +351,6 @@
                     </TabControl>
                 </Border>
 
-                <!-- System Information Footer -->
                 <Border Style="{StaticResource CardStyle}">
                     <StackPanel>
                         <TextBlock Text="System Information" Style="{StaticResource HeaderStyle}"/>
@@ -310,7 +380,7 @@
                                 <TextBlock Text="{Binding CurrentInterface.MaxContexts}" Style="{StaticResource ValueStyle}"/>
                                 <TextBlock Text="Last Updated:" Style="{StaticResource SubHeaderStyle}"/>
                                 <TextBlock Text="{Binding CurrentInterface.LastUpdated, StringFormat='yyyy-MM-dd HH:mm:ss'}" 
-                                          Style="{StaticResource ValueStyle}"/>
+                                           Style="{StaticResource ValueStyle}"/>
                             </StackPanel>
                         </Grid>
                     </StackPanel>

@@ -1,0 +1,134 @@
+﻿<Window x:Class="MbnDiagnostics.TcpIpWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="TCP/IP Interfaces"
+        Height="600" Width="900"
+        WindowStartupLocation="CenterOwner">
+    <Grid Margin="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="8"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="8"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <DockPanel Grid.Row="0">
+            <TextBlock Text="Interface:" VerticalAlignment="Center" Margin="0,0,8,0"/>
+            <ComboBox x:Name="InterfaceComboBox"
+                      Width="420"
+                      ItemsSource="{Binding Interfaces}"
+                      SelectedItem="{Binding SelectedInterface, Mode=TwoWay}"
+                      DisplayMemberPath="Name"
+                      SelectionChanged="InterfaceComboBox_SelectionChanged"/>
+        </DockPanel>
+
+        <Border Grid.Row="2" Padding="10" BorderThickness="1" BorderBrush="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}" CornerRadius="4">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="6"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="6"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="6"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="6"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="6"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="6"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="6"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="Name" FontWeight="Bold"/>
+                <TextBlock Grid.Row="2" Grid.Column="0" Text="Description" FontWeight="Bold"/>
+                <TextBlock Grid.Row="4" Grid.Column="0" Text="Type" FontWeight="Bold"/>
+                <TextBlock Grid.Row="6" Grid.Column="0" Text="Status" FontWeight="Bold"/>
+                <TextBlock Grid.Row="8" Grid.Column="0" Text="Speed (Mbps)" FontWeight="Bold"/>
+                <TextBlock Grid.Row="10" Grid.Column="0" Text="MAC" FontWeight="Bold"/>
+                <TextBlock Grid.Row="12" Grid.Column="0" Text="Priority" FontWeight="Bold"/>
+                <TextBlock Grid.Row="14" Grid.Column="0" Text="DHCP (IPv4)" FontWeight="Bold"/>
+
+                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SelectedInterface.Name}"/>
+                <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SelectedInterface.Description}"/>
+                <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding SelectedInterface.Type}"/>
+                <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding SelectedInterface.OperationalStatus}"/>
+                <TextBlock Grid.Row="8" Grid.Column="1" Text="{Binding SelectedInterface.SpeedMbps}"/>
+                <TextBlock Grid.Row="10" Grid.Column="1" Text="{Binding SelectedInterface.MacAddress}"/>
+                <TextBlock Grid.Row="12" Grid.Column="1" Text="{Binding SelectedInterface.Priority}"/>
+                <CheckBox Grid.Row="14" Grid.Column="1" IsEnabled="False"
+                          IsChecked="{Binding SelectedInterface.DhcpEnabled}"/>
+
+                <TextBlock Grid.Row="0" Grid.Column="2" Text="IPv4 Address" FontWeight="Bold"/>
+                <TextBlock Grid.Row="2" Grid.Column="2" Text="IPv4 Mask" FontWeight="Bold"/>
+                <TextBlock Grid.Row="4" Grid.Column="2" Text="Default Gateway" FontWeight="Bold"/>
+                <TextBlock Grid.Row="6" Grid.Column="2" Text="IPv6 Address" FontWeight="Bold"/>
+                <TextBlock Grid.Row="8" Grid.Column="2" Text="DNS (Primary)" FontWeight="Bold"/>
+                <TextBlock Grid.Row="10" Grid.Column="2" Text="DNS (Secondary)" FontWeight="Bold"/>
+                <TextBlock Grid.Row="12" Grid.Column="2" Text="Packets (Sent/Recv)" FontWeight="Bold"/>
+                <TextBlock Grid.Row="14" Grid.Column="2" Text="Bytes (Sent/Recv)" FontWeight="Bold"/>
+
+                <TextBlock Grid.Row="0" Grid.Column="3" Text="{Binding SelectedInterface.IPv4Address}"/>
+                <TextBlock Grid.Row="2" Grid.Column="3" Text="{Binding SelectedInterface.IPv4Mask}"/>
+                <TextBlock Grid.Row="4" Grid.Column="3" Text="{Binding SelectedInterface.DefaultGateway}"/>
+                <TextBlock Grid.Row="6" Grid.Column="3" Text="{Binding SelectedInterface.IPv6Address}"/>
+                <TextBlock Grid.Row="8" Grid.Column="3" Text="{Binding SelectedInterface.PrimaryDns}"/>
+                <TextBlock Grid.Row="10" Grid.Column="3" Text="{Binding SelectedInterface.SecondaryDns}"/>
+                <TextBlock Grid.Row="12" Grid.Column="3">
+                    <Run Text="{Binding SelectedInterface.PacketsSent}"/><Run Text=" / "/><Run Text="{Binding SelectedInterface.PacketsReceived}"/>
+                </TextBlock>
+                <TextBlock Grid.Row="14" Grid.Column="3">
+                    <Run Text="{Binding SelectedInterface.BytesSent}"/><Run Text=" / "/><Run Text="{Binding SelectedInterface.BytesReceived}"/>
+                </TextBlock>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="4" Margin="10,0,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="200"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" Grid.ColumnSpan="2" Text="Real-time Ping Responses" FontWeight="Bold" Margin="0,0,0,10"/>
+
+            <TextBlock Grid.Row="1" Grid.Column="0" Text="Default Gateway:" Margin="0,0,10,5"/>
+            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding DefaultGatewayPing}" Margin="0,0,0,5"/>
+
+            <TextBlock Grid.Row="2" Grid.Column="0" Text="Primary DNS:" Margin="0,0,10,5"/>
+            <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding PrimaryDnsPing}" Margin="0,0,0,5"/>
+
+            <TextBlock Grid.Row="3" Grid.Column="0" Text="Secondary DNS:" Margin="0,0,10,5"/>
+            <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SecondaryDnsPing}" Margin="0,0,0,5"/>
+
+            <TextBlock Grid.Row="4" Grid.Column="0" Text="Google.com:" Margin="0,0,10,5"/>
+            <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding GooglePing}" Margin="0,0,0,5"/>
+
+            <TextBlock Grid.Row="5" Grid.Column="0" Text="mobility.fontana.org:" Margin="0,0,10,5"/>
+            <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding FontanaPing}" Margin="0,0,0,5"/>
+
+            <TextBlock Grid.Row="6" Grid.Column="0" Text="mobility.fontanapd.org:" Margin="0,0,10,5"/>
+            <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding FontanaPdPing}" Margin="0,0,0,5"/>
+        </Grid>
+    </Grid>
+</Window>
